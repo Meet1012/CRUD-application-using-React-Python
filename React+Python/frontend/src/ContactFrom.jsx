@@ -1,0 +1,76 @@
+import { useState } from "react";
+
+const ContactForm = ({ existingContact = {}, updateCallback }) => {
+  const [firstName, setFirstName] = useState(existingContact.firstName || "");
+  const [lastName, setLastName] = useState(existingContact.lastName || "");
+  const [email, setEmail] = useState(existingContact.email || "");
+
+  const updating = Object.entries(existingContact).length !== 0;
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+
+    const data = {
+      firstName,
+      lastName,
+      email,
+    };
+    const url =
+      "http://127.0.0.1:5000/" +
+      (updating ? `update_contact/${existingContact.id}` : "create_contact");
+    const options = {
+      method: updating ? "PATCH" : "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    };
+    const response = await fetch(url, options);
+    if (response.status !== 201 && response.status !== 200) {
+      const data = await response.json();
+      alert(data.message);
+    } else {
+      updateCallback();
+    }
+  };
+
+  return (
+    <div className="font-bold ml-64 mt-10">
+      <form onSubmit={onSubmit}>
+        <div>
+          <label htmlFor="firstName">First Name:</label>
+          <input
+            className="border-2 border-black rounded-lg ml-2"
+            type="text"
+            id="firstName"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+        </div>
+        <div className="mt-2">
+          <label htmlFor="lastName">Last Name:</label>
+          <input
+            className="border-2 border-black rounded-lg ml-2"
+            type="text"
+            id="lastName"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </div>
+        <div className="mt-2">
+          <label htmlFor="email">Email:</label>
+          <input
+            className="border-2 border-black rounded-lg ml-2"
+            type="text"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        <button className="border-2 border-black bg-gray-300 rounded-lg px-2 mt-10" type="submit">{updating ? "Update" : "Create"}</button>
+      </form>
+    </div>
+  );
+};
+
+export default ContactForm;
